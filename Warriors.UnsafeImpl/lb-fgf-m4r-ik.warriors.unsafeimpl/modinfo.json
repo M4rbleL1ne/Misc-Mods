@@ -1,0 +1,11 @@
+{
+  "id": "lb-fgf-m4r-ik.warriors.unsafeimpl",
+  "name": "Warriors.UnsafeImpl",
+  "version": "1.0.0",
+  "authors": "M4rbleL1ne",
+  "description": "Lets you use the System.Runtime.CompilerServices.Unsafe class methods for your mods (method bodies implemented in IL with Mono.Cecil). You need to reference System.Runtime.CompilerServices.Unsafe.dll and add a BepInDependency attribute to your plugin class (the ID is: lb-fgf-m4r-ik.warriors.unsafeimpl).",
+  "requirements": [],
+  "requirements_names": [],
+  "checksum_override_version": false,
+  "tags": [ "dependency" ]
+}

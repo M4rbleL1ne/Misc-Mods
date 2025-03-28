@@ -1,0 +1,11 @@
+{
+  "id": "lb-fgf-m4r-ik.unknown-token-fix",
+  "name": "Unknown Token Fix",
+  "version": "1.0.0",
+  "authors": "M4rbleL1ne",
+  "description": "Prevents the player from collecting tokens whose ID is not recognized by the game. This usually happens when you are missing a custom creature used by a region mod.",
+  "requirements": [],
+  "requirements_names": [],
+  "checksum_override_version": false,
+  "tags": [ "dependency" ]
+}
