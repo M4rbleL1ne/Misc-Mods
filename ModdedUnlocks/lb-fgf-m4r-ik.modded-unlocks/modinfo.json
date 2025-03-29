@@ -1,0 +1,11 @@
+{
+  "id": "lb-fgf-m4r-ik.modded-unlocks",
+  "name": "Modded Unlocks",
+  "version": "1.0.1",
+  "authors": "M4rbleL1ne",
+  "description": "Unlocks all non-vanilla and non-downpour arena levels and arena creatures.",
+  "requirements": [],
+  "requirements_names": [],
+  "checksum_override_version": false,
+  "tags": [ "tools" ]
+}

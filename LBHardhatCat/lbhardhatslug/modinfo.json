@@ -1,0 +1,11 @@
+{
+  "id": "lb-fgf-m4r-ik.hardhat-cat",
+  "name": "Hardhat Cat",
+  "version": "1.0.1",
+  "authors": "M4rbleL1ne, Beep",
+  "description": "Adds a new slugcat that wears a hardhat and can spawn random machines. A new way to play base game and modded regions. Code and in-game sprites by M4rbleL1ne, scene art by Beep. More info on the region expansions used as dependencies can be found on their respective workshop pages and on the Rain World Mods Wiki. Inspired by the art of Vela and Nautillo for the Official Rain World Modding Server: https://discord.gg/kPGJNhrnu2",
+  "requirements": [ "slime-cubed.slugbase", "regionkit", "lb-fgf-m4r-ik.modpack", "expandedindustrial", "expanded_outskirts", "expandedlegsolorace" ],
+  "requirements_names": [ "SlugBase", "RegionKit", "The M4rblelous Entity Pack.", "Expanded Industrial", "Expanded Outskirts", "Expanded Leg" ],
+  "checksum_override_version": false,
+  "tags": [ "custom slugcat", "items" ]
+}

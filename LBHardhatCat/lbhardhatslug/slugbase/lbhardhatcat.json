@@ -1,0 +1,66 @@
+{
+  "id": "LBHardhatCat",
+  "name": "Hardhat Cat",
+  "description": "A robust slugcat that has the power to change the geometry of levels.",
+  "features": {
+    "color": "FFFFFF",
+    "auto_grab_batflies": false,
+    "weight": [ 1.1, 1.03 ],
+    "tunnel_speed": [ 0.98, 0.93 ],
+    "climb_speed": [ 0.98, 0.93 ],
+    "walk_speed": [ 0.98, 0.93 ],
+    "crouch_stealth": [ 0.8, 0.82 ],
+    "throw_skill": [ 1, 0 ],
+    "lung_capacity": [ 1.15, 1.1 ],
+    "loudness": [ 1.4, 1.32 ],
+    "alignments": {
+      "Lizards": {
+        "like": 1.0,
+        "strength": 0.05
+      },
+      "Scavengers": {
+        "like": 1.0,
+        "strength": 0.4
+      },
+      "Cicadas": {
+        "like": 1.0,
+        "strength": 0.2
+      },
+      "GarbageWorms": {
+        "like": 1.0,
+        "strength": 0.4
+      },
+      "Deer": {
+        "like": 1.0,
+        "strength": 0.4
+      },
+      "JetFish": {
+        "like": 1.0,
+        "strength": 0.2
+      }
+    },
+    "diet": {
+      "base": "White"
+    },
+    "the_mark": true,
+    "karma": 0,
+    "karma_cap": 4,
+    "the_glow": true,
+    "start_room": "HI_Sbaseexshelt2",
+    "has_dreams": false,
+    "cycle_length_min": 10,
+    "cycle_length_max": 16,
+    "perma_unlock_gates": false,
+    "food_min": 5,
+    "food_max": 9,
+    "world_state": "White",
+    "timeline_before": [ "Yellow" ],
+    "timeline_after": [ "White" ],
+    "expedition_enabled": true,
+    "expedition_description": "A slugcat that can change the geometry of levels.<LINE>This asset will help the Hardhat Cat in expeditions.",
+    "story_regions": [ "SU", "HI", "GW", "SL", "SH", "UW", "SS", "CC", "SI", "LF", "SB", "DS" ],
+    "select_menu_scene": "Slugcat_LBHardhatCat",
+    "select_menu_scene_ascended": "Ghost_LBHardhatCat",
+    "death_scene": "NewDeath"
+  }
+}
