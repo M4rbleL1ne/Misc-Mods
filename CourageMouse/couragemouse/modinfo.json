@@ -1,0 +1,11 @@
+{
+  "id": "lb-fgf-m4r-ik.courage-mouse-port",
+  "name": "Courage the Cowardly Mouse",
+  "version": "2.0.0",
+  "authors": "Garrakx and M4rbleL1ne",
+  "description": "Changes lantern mice so that they are no longer afraid of the player. (original mod by Garrakx)",
+  "requirements": [],
+  "requirements_names": [],
+  "checksum_override_version": false,
+  "tags": [ "creatures" ]
+}

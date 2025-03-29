@@ -1,0 +1,17 @@
+{
+  "Title": "Bat Bomb",
+  "Description": "A bomb that transforms things into bats. Useful when you find vultures or leviathans annoying...",
+  "ID": "lb-fgf-m4r-ik.bat-bombs",
+  "Version": "1.1.1",
+  "TargetGameVersion": "",
+  "Requirements": "",
+  "RequirementNames": "",
+  "Authors": "M4rbleL1ne",
+  "Visibility": "Public",
+  "Tags": [
+    "Items"
+  ],
+  "WorkshopID": 2922638896,
+  "UploadFilesOnly": true,
+  "UploadThumbnail": false
+}

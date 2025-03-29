@@ -1,0 +1,11 @@
+{
+  "id": "lb-fgf-m4r-ik.bat-bombs",
+  "name": "Bat Bomb",
+  "version": "1.1.1",
+  "authors": "M4rbleL1ne",
+  "description": "A bomb that transforms things into bats. Useful when you find vultures or leviathans annoying...",
+  "requirements": [],
+  "requirements_names": [],
+  "checksum_override_version": false,
+  "tags": ["items"]
+}

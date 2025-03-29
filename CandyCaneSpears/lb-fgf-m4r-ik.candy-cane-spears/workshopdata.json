@@ -1,0 +1,17 @@
+{
+  "Title": "Candy Cane Spears",
+  "Description": "Changes the appearance of spears to make them candy canes.",
+  "ID": "lb-fgf-m4r-ik.candy-cane-spears",
+  "Version": "1.1.1",
+  "TargetGameVersion": "",
+  "Requirements": "",
+  "RequirementNames": "",
+  "Authors": "Sov_Sam, M4rbleL1ne",
+  "Visibility": "Public",
+  "Tags": [
+    "Cosmetics"
+  ],
+  "WorkshopID": 2921604521,
+  "UploadFilesOnly": true,
+  "UploadThumbnail": false
+}

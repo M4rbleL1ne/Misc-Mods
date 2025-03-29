@@ -1,0 +1,11 @@
+{
+  "id": "lb-fgf-m4r-ik.warriors.detour-context-dispose-fix",
+  "name": "Warriors.DetourContextDisposeFix",
+  "version": "1.1.0",
+  "authors": "M4rbleL1ne",
+  "description": "Fix for MonoMod.RuntimeDetour.DetourContext.Dispose.",
+  "requirements": [],
+  "requirements_names": [],
+  "checksum_override_version": false,
+  "tags": [ "dependency" ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "lb-fgf-m4r-ik.clear-water-plugin",
+  "name": "Clear Water",
+  "version": "1.1.1",
+  "authors": "Garrakx and M4rbleL1ne",
+  "description": "Makes all water in the game crystal clear. (original mod by Garrakx)",
+  "requirements": [],
+  "requirements_names": [],
+  "checksum_override_version": false,
+  "tags": [ "accessibility" ]
+}
