@@ -1,0 +1,11 @@
+{
+  "id": "lb-fgf-m4r-ik.rw-trycatch",
+  "name": "Rain World Try Catch",
+  "version": "10.0.0",
+  "authors": "M4rbleL1ne",
+  "description": "Adds a try catch block around RainWorld.Update so that it logs more exceptions in the exceptionLog.txt file. Add a logToBep.txt file in the main Rain World folder so that it also logs exceptions in logOutput.log. Useful for debugging but may slightly affect performance.",
+  "requirements": [],
+  "requirements_names": [],
+  "checksum_override_version": false,
+  "tags": [ "tools", "base", "downpour", "watcher" ]
+}
