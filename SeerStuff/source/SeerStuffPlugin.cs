@@ -56,7 +56,6 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         On.MiscWorldSaveData.FromString += On_MiscWorldSaveData_FromString;
         On.Overseer.TryAddHologram += On_Overseer_TryAddHologram;
         IL.OverseerTutorialBehavior.Update += IL_OverseerTutorialBehavior_Update;
-        IL.WorldLoader.CreatingWorld += IL_WorldLoader_CreatingWorld;
         On.Expedition.ChallengeTools.AppendAdditionalCreatureSpawns += On_ChallengeTools_AppendAdditionalCreatureSpawns;
         On.Expedition.VistaChallenge.ModifyVistaCandidates += On_VistaChallenge_ModifyVistaCandidates;
         IL.GlobalRain.DeathRain.NextDeathRainMode += IL_DeathRain_NextDeathRainMode;
@@ -181,20 +180,6 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
                 points = ChallengeTools.creatureScores.TryGetValue(DLCSharedEnums.CreatureTemplateType.BigJelly.value, out var value) ? value : 0,
                 spawns = 2
             });
-    }
-
-    static void IL_WorldLoader_CreatingWorld(ILContext il)
-    {
-        var c = new ILCursor(il);
-        if (c.TryGotoNext(MoveType.After,
-            x => x.MatchLdsfld<MoreSlugcatsEnums.SlugcatStatsName>(nameof(MoreSlugcatsEnums.SlugcatStatsName.Rivulet)),
-            x => x.MatchCall(out _)))
-        {
-            c.Emit(OpCodes.Ldarg_0)
-             .EmitDelegate((bool flag, WorldLoader self) => flag || self.game.StoryCharacter == s_seer);
-        }
-        else
-            s_logger.LogError("Couldn't ILHook WorldLoader.CreatingWorld!");
     }
 
     static void IL_OverseerTutorialBehavior_Update(ILContext il)
