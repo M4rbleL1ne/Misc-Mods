@@ -65,6 +65,34 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         On.ElectricGate.Update += On_ElectricGate_Update;
         On.GateKarmaGlyph.DrawSprites += On_GateKarmaGlyph_DrawSprites;
         On.AbstractPhysicalObject.Realize += On_AbstractPhysicalObject_Realize;
+        On.Centipede.Update += On_Centipede_Update;
+        On.Centipede.ShortCutColor += On_Centipede_ShortCutColor;
+        On.CentipedeGraphics.Update += On_CentipedeGraphics_Update;
+    }
+
+    static void On_CentipedeGraphics_Update(On.CentipedeGraphics.orig_Update orig, CentipedeGraphics self)
+    {
+        if (self.centipede.Small && self.centipede.abstractCreature.superSizeMe && self.saturation != .85f)
+        {
+            self.hue = Mathf.Lerp(.28f, .38f, Random.value);
+            self.saturation = .85f;
+        }
+        orig(self);
+    }
+
+    static Color On_Centipede_ShortCutColor(On.Centipede.orig_ShortCutColor orig, Centipede self)
+    {
+        var res = orig(self);
+        if (self.Small && self.abstractCreature.superSizeMe)
+            res = Custom.HSL2RGB(Mathf.Lerp(.28f, .38f, .5f), .5f, .5f);
+        return res;
+    }
+
+    static void On_Centipede_Update(On.Centipede.orig_Update orig, Centipede self, bool eu)
+    {
+        if (self.Small && !self.abstractCreature.superSizeMe && self.abstractCreature.world is World w && w.name == "SI" && w.game?.StoryCharacter == s_seer)
+            self.abstractCreature.superSizeMe = true;
+        orig(self, eu);
     }
 
     static void On_AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
