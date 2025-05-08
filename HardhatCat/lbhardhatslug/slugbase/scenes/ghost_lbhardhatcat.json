@@ -1,0 +1,29 @@
+{
+	"id": "Ghost_LBHardhatCat",
+	"scene_folder": "scenes/lbhardhatcat ghost slugcat",
+	"images": [
+		{
+			"name": "lbhardhatcat ghost bkg",
+			"pos": [ 330, -18 ],
+			"depth": 4.5,
+			"shader": "Normal"
+		},
+		{
+			"name": "lbhardhatcat ghost a",
+			"pos": [ 557, 89 ],
+			"depth": 2.85,
+			"shader": "Normal"
+		},
+		{
+			"name": "lbhardhatcat ghost b",
+			"pos": [ 574, 74 ],
+			"depth": 2.7,
+			"shader": "Overlay"
+		}
+	],
+	"idle_depths": [ 3.1, 2.8 ],
+	"glow_pos": [ -30, -50 ],
+	"mark_pos": [ -15, -2 ],
+	"select_menu_pos": [ -10, 100 ],
+	"slugcat_depth": 3.10000014
+}

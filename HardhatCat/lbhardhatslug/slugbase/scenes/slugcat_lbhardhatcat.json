@@ -1,0 +1,47 @@
+{
+	"id": "Slugcat_LBHardhatCat",
+	"scene_folder": "scenes/slugcat - lbhardhatcat",
+	"images": [
+		{
+			"name": "LBHardhatCat Background - 5",
+			"pos": [ 358, 117 ],
+			"depth": 3.6,
+			"shader": "Normal"
+		},
+		{
+			"name": "LBHardhatCat Haze - 4",
+			"pos": [ 425, 205 ],
+			"depth": 3.2,
+			"shader": "Lighten"
+		},
+		{
+			"name": "LBHardhatCat BkgPlants - 3",
+			"pos": [ 457, 140 ],
+			"depth": 3.1,
+			"shader": "Normal"
+		},
+		{
+			"name": "LBHardhatCat Vines - 1",
+			"pos": [ 459, 385 ],
+			"depth": 2.8,
+			"shader": "Normal"
+		},
+		{
+			"name": "LBHardhatCat Slugcat - 2",
+			"pos": [ 601, 178 ],
+			"depth": 2.7,
+			"shader": "LightEdges"
+		},
+		{
+			"name": "LBHardhatCat FgPlants - 0",
+			"pos": [ 383, 64 ],
+			"depth": 2.1,
+			"shader": "Normal"
+		}
+	],
+	"idle_depths": [ 3.6, 2.8, 2.7, 2.6, 1.5 ],
+	"glow_pos": [ -30, -50 ],
+	"mark_pos": [ -15, -2 ],
+	"select_menu_pos": [ -10, 100 ],
+	"slugcat_depth": 3.10000014
+}
