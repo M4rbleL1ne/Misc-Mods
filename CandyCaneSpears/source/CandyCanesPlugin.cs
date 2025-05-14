@@ -5,6 +5,7 @@ using System.Security;
 using System;
 using MoreSlugcats;
 using System.Runtime.CompilerServices;
+using BepInEx.Logging;
 
 #pragma warning disable CS0618 // ignore false message
 [module: UnverifiableCode]
@@ -17,14 +18,23 @@ namespace CandyCaneSpears;
 public sealed class CandyCanesPlugin : BaseUnityPlugin
 {
     public static ConditionalWeakTable<Spear, StrongBox<int>> CandyIndex = new();
+    static ManualLogSource? s_logger;
 
     public void OnEnable()
     {
+        s_logger = Logger;
         On.RainWorld.OnModsInit += (orig, self) =>
         {
             orig(self);
-            if (!Futile.atlasManager.DoesContainAtlas("candycanespear"))
-                Futile.atlasManager.LoadAtlas("atlases/candycanespear");
+            try
+            {
+                if (!Futile.atlasManager.DoesContainAtlas("candycanespear"))
+                    Futile.atlasManager.LoadAtlas("atlases/candycanespear");
+            }
+            catch (Exception e)
+            {
+                s_logger.LogError("Exception while loading atlases: " + e);
+            }
         };
         On.RainWorld.UnloadResources += (orig, self) =>
         {
@@ -84,5 +94,9 @@ public sealed class CandyCanesPlugin : BaseUnityPlugin
         };
     }
 
-    public void OnDisable() => CandyIndex = null!;
+    public void OnDisable()
+    {
+        s_logger = null;
+        CandyIndex = null!;
+    }
 }

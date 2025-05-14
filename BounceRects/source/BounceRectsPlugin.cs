@@ -68,14 +68,17 @@ sealed class BounceRectsPlugin : BaseUnityPlugin
                 orig(self);
             else
             {
-                var firstTimeRealized = rm.firstTimeRealized;
                 orig(self);
                 var objs = self.roomSettings.placedObjects;
-                for (var i = 0; i < objs.Count; i++)
+                for (var rl = 1; rl <= 2; rl++)
                 {
-                    var pObj = objs[i];
-                    if (pObj.active)
+                    if (rl == 2 && self.warpPoints.Count > 0)
+                        continue;
+                    for (var i = 0; i < objs.Count; i++)
                     {
+                        var pObj = objs[i];
+                        if ((rl == 1 && pObj.deactivatedByWarpFilter) || (rl == 2 && !pObj.deactivatedByWarpFilter) || !pObj.active)
+                            continue;
                         if (pObj.type == PlacedObjectType.BounceRect)
                             self.AddObject(new BounceRectObject(self, pObj));
                     }

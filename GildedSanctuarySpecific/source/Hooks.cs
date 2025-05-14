@@ -15,11 +15,18 @@ static class Hooks
                 return;
             orig(self);
             var pObjs = self.roomSettings.placedObjects;
-            for (var i = 0; i < pObjs.Count; i++)
+            for (var rl = 1; rl <= 2; rl++)
             {
-                var pObj = pObjs[i];
-                if (pObj.type == PlacedObjectType.GRJLeviathanPushBack && pObj.active)
-                    self.AddObject(new LeviathanPushbackObject(self, (pObj.data as PlacedObject.ResizableObjectData)!));
+                if (rl == 2 && self.warpPoints.Count > 0)
+                    continue;
+                for (var i = 0; i < pObjs.Count; i++)
+                {
+                    var pObj = pObjs[i];
+                    if ((rl == 1 && pObj.deactivatedByWarpFilter) || (rl == 2 && !pObj.deactivatedByWarpFilter) || !pObj.active)
+                        continue;
+                    if (pObj.type == PlacedObjectType.GRJLeviathanPushBack)
+                        self.AddObject(new LeviathanPushbackObject(self, (pObj.data as PlacedObject.ResizableObjectData)!));
+                }
             }
         };
         On.PlacedObject.GenerateEmptyData += (orig, self) =>
