@@ -38,6 +38,8 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
     [AllowNull] public static DreamsState.DreamID SeerIntroDream = new(nameof(SeerIntroDream), true);
     [AllowNull] public static AbstractPhysicalObject.AbstractObjectType SeerSpawn = new(nameof(SeerSpawn), true);
     [AllowNull] public static ConditionalWeakTable<Region, EchoDirectionFinder> RegionEchoDirFinder = new();
+    //[AllowNull] public static GhostWorldPresence.GhostID Ghost_NP_ID = new("NP");
+    //[AllowNull] public static Conversation.ID Ghost_NP_Convo = new("Ghost_NP");
 
     public void OnEnable()
     {
@@ -58,7 +60,7 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         IL.OverseerTutorialBehavior.Update += IL_OverseerTutorialBehavior_Update;
         On.Expedition.ChallengeTools.AppendAdditionalCreatureSpawns += On_ChallengeTools_AppendAdditionalCreatureSpawns;
         On.Expedition.VistaChallenge.ModifyVistaCandidates += On_VistaChallenge_ModifyVistaCandidates;
-        IL.GlobalRain.DeathRain.NextDeathRainMode += IL_DeathRain_NextDeathRainMode;
+        //IL.GlobalRain.DeathRain.NextDeathRainMode += IL_DeathRain_NextDeathRainMode;
         On.Player.SpitOutOfShortCut += On_Player_SpitOutOfShortCut;
         new Hook(typeof(RegionGate).GetMethod("get_MeetRequirement", Public | NonPublic | Instance | Static), On_RegionGate_get_MeetRequirement);
         new Hook(typeof(SaveState).GetMethod("get_CanSeeVoidSpawn", Public | NonPublic | Instance | Static), On_SaveState_get_CanSeeVoidSpawn);
@@ -68,7 +70,39 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         On.Centipede.Update += On_Centipede_Update;
         On.Centipede.ShortCutColor += On_Centipede_ShortCutColor;
         On.CentipedeGraphics.Update += On_CentipedeGraphics_Update;
+        //On.Ghost.StartConversation += On_Ghost_StartConversation;
+        //On.GhostWorldPresence.GetGhostID += On_GhostWorldPresence_GetGhostID;
+        //On.GhostWorldPresence.ctor_World_GhostID_int += On_GhostWorldPresence_ctor_World_GhostID_int;
     }
+
+    /*static void On_GhostWorldPresence_ctor_World_GhostID_int(On.GhostWorldPresence.orig_ctor_World_GhostID_int orig, GhostWorldPresence self, World world, GhostWorldPresence.GhostID ghostID, int spinningTopSpawnId)
+    {
+        orig(self, world, ghostID, spinningTopSpawnId);
+        if (ghostID == Ghost_NP_ID)
+        {
+            self.ghostRoom = world.GetAbstractRoom("NP_dustgarden");
+            self.songName = "NA_34 - Else3";
+            Custom.LogWarning("IGNORE THE PREVIOUS \"GHOST ROOM NOT FOUND!\" MESSAGE!");
+            if (self.ghostRoom is null)
+                Custom.LogWarning("GHOST ROOM NOT FOUND! FOR REAL THIS TIME! NP_dustgarden");
+        }
+    }
+
+    static GhostWorldPresence.GhostID On_GhostWorldPresence_GetGhostID(On.GhostWorldPresence.orig_GetGhostID orig, string regionName) => regionName == "NP" ? Ghost_NP_ID : orig(regionName);
+
+    static void On_Ghost_StartConversation(On.Ghost.orig_StartConversation orig, Ghost self)
+    {
+        if (self.worldGhost.ghostID == Ghost_NP_ID)
+        {
+            var hud = self.room.game.cameras[0].hud;
+            if (hud.dialogBox is null)
+                hud.InitDialogBox();
+            self.currentConversation = new(Ghost_NP_Convo, self, hud.dialogBox);
+            self.conversationActive = true;
+        }
+        else
+            orig(self);
+    }*/
 
     static void On_CentipedeGraphics_Update(On.CentipedeGraphics.orig_Update orig, CentipedeGraphics self)
     {
@@ -173,7 +207,7 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         }
     }
 
-    static void IL_DeathRain_NextDeathRainMode(ILContext il)
+    /*static void IL_DeathRain_NextDeathRainMode(ILContext il)
     {
         var c = new ILCursor(il);
         if (c.TryGotoNext(MoveType.After,
@@ -185,7 +219,7 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         }
         else
             s_logger.LogError("Couldn't ILHook DeathRain.NextDeathRainMode!");
-    }
+    }*/
 
     static void On_VistaChallenge_ModifyVistaCandidates(On.Expedition.VistaChallenge.orig_ModifyVistaCandidates orig, VistaChallenge self, VistaChallenge input)
     {
@@ -562,6 +596,10 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
                 SeerIntroDream = null;
                 SeerSpawn?.Unregister();
                 SeerSpawn = null;
+                /*Ghost_NP_ID?.Unregister();
+                Ghost_NP_ID = null!;
+                Ghost_NP_Convo?.Unregister();
+                Ghost_NP_Convo = null!;*/
                 break;
             }
         }
@@ -627,7 +665,7 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
     {
         var res = orig(ghostID, karma, karmaCap, ghostPreviouslyEncountered, playingAsRed);
         if (!res && !Custom.rainWorld.safariMode && (!ModManager.Expedition || !Custom.rainWorld.ExpeditionMode || Custom.rainWorld.progression.currentSaveState.cycleNumber != 0) && Custom.rainWorld.progression.currentSaveState.saveStateNumber == s_seer)
-            return (ghostID?.value is "NP" ? ghostPreviouslyEncountered == 1 : ghostPreviouslyEncountered < 2) && karma >= karmaCap;
+            return (ghostID?.value == "NP" ? ghostPreviouslyEncountered == 1 : ghostPreviouslyEncountered < 2) && karma >= karmaCap;
         return res;
     }
 
