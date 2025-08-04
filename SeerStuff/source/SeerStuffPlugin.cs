@@ -1,25 +1,26 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
-using System.Diagnostics.CodeAnalysis;
-using System.Security;
-using System.Security.Permissions;
-using RWCustom;
-using System;
+using Expedition;
 using HUD;
 using Menu;
-using SlugBase;
-using SlugBase.Features;
-using SlugBase.Assets;
-using UnityEngine;
-using Random = UnityEngine.Random;
-using MoreSlugcats;
-using MonoMod.Cil;
 using Mono.Cecil.Cil;
-using OverseerHolograms;
-using Expedition;
-using System.Runtime.CompilerServices;
+using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using MoreSlugcats;
+using OverseerHolograms;
+using RegionKit.Modules.EchoExtender;
+using RWCustom;
+using SlugBase;
+using SlugBase.Assets;
+using SlugBase.Features;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Security;
+using System.Security.Permissions;
+using UnityEngine;
 using static System.Reflection.BindingFlags;
+using Random = UnityEngine.Random;
 
 #pragma warning disable CS0618 // ignore false message
 [module: UnverifiableCode]
@@ -28,7 +29,7 @@ using static System.Reflection.BindingFlags;
 
 namespace SeerStuff;
 
-[BepInPlugin(K_ID, nameof(SeerStuff), "10.0.0"), BepInDependency("slime-cubed.slugbase")]
+[BepInPlugin(K_ID, nameof(SeerStuff), "10.0.0"), BepInDependency("slime-cubed.slugbase"), BepInDependency("rwmodding.coreorg.rk")]
 public sealed class SeerStuffPlugin : BaseUnityPlugin
 {
     [AllowNull] internal static ManualLogSource s_logger;
@@ -38,8 +39,6 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
     [AllowNull] public static DreamsState.DreamID SeerIntroDream = new(nameof(SeerIntroDream), true);
     [AllowNull] public static AbstractPhysicalObject.AbstractObjectType SeerSpawn = new(nameof(SeerSpawn), true);
     [AllowNull] public static ConditionalWeakTable<Region, EchoDirectionFinder> RegionEchoDirFinder = new();
-    //[AllowNull] public static GhostWorldPresence.GhostID Ghost_NP_ID = new("NP");
-    //[AllowNull] public static Conversation.ID Ghost_NP_Convo = new("Ghost_NP");
 
     public void OnEnable()
     {
@@ -60,7 +59,6 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         IL.OverseerTutorialBehavior.Update += IL_OverseerTutorialBehavior_Update;
         On.Expedition.ChallengeTools.AppendAdditionalCreatureSpawns += On_ChallengeTools_AppendAdditionalCreatureSpawns;
         On.Expedition.VistaChallenge.ModifyVistaCandidates += On_VistaChallenge_ModifyVistaCandidates;
-        //IL.GlobalRain.DeathRain.NextDeathRainMode += IL_DeathRain_NextDeathRainMode;
         On.Player.SpitOutOfShortCut += On_Player_SpitOutOfShortCut;
         new Hook(typeof(RegionGate).GetMethod("get_MeetRequirement", Public | NonPublic | Instance | Static), On_RegionGate_get_MeetRequirement);
         new Hook(typeof(SaveState).GetMethod("get_CanSeeVoidSpawn", Public | NonPublic | Instance | Static), On_SaveState_get_CanSeeVoidSpawn);
@@ -70,39 +68,31 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         On.Centipede.Update += On_Centipede_Update;
         On.Centipede.ShortCutColor += On_Centipede_ShortCutColor;
         On.CentipedeGraphics.Update += On_CentipedeGraphics_Update;
-        //On.Ghost.StartConversation += On_Ghost_StartConversation;
-        //On.GhostWorldPresence.GetGhostID += On_GhostWorldPresence_GetGhostID;
-        //On.GhostWorldPresence.ctor_World_GhostID_int += On_GhostWorldPresence_ctor_World_GhostID_int;
+        On.ItemSymbol.SpriteNameForItem += On_ItemSymbol_SpriteNameForItem;
+        On.ItemSymbol.ColorForItem += On_ItemSymbol_ColorForItem;
+        On.RainWorld.UnloadResources += On_RainWorld_UnloadResources;
     }
 
-    /*static void On_GhostWorldPresence_ctor_World_GhostID_int(On.GhostWorldPresence.orig_ctor_World_GhostID_int orig, GhostWorldPresence self, World world, GhostWorldPresence.GhostID ghostID, int spinningTopSpawnId)
+    static void On_RainWorld_UnloadResources(On.RainWorld.orig_UnloadResources orig, RainWorld self)
     {
-        orig(self, world, ghostID, spinningTopSpawnId);
-        if (ghostID == Ghost_NP_ID)
-        {
-            self.ghostRoom = world.GetAbstractRoom("NP_dustgarden");
-            self.songName = "NA_34 - Else3";
-            Custom.LogWarning("IGNORE THE PREVIOUS \"GHOST ROOM NOT FOUND!\" MESSAGE!");
-            if (self.ghostRoom is null)
-                Custom.LogWarning("GHOST ROOM NOT FOUND! FOR REAL THIS TIME! NP_dustgarden");
-        }
+        orig(self);
+        if (Futile.atlasManager.DoesContainAtlas("Symbol_SeerVoidSpawn"))
+            Futile.atlasManager.UnloadAtlas("Symbol_SeerVoidSpawn");
     }
 
-    static GhostWorldPresence.GhostID On_GhostWorldPresence_GetGhostID(On.GhostWorldPresence.orig_GetGhostID orig, string regionName) => regionName == "NP" ? Ghost_NP_ID : orig(regionName);
-
-    static void On_Ghost_StartConversation(On.Ghost.orig_StartConversation orig, Ghost self)
+    static string On_ItemSymbol_SpriteNameForItem(On.ItemSymbol.orig_SpriteNameForItem orig, AbstractPhysicalObject.AbstractObjectType itemType, int intData)
     {
-        if (self.worldGhost.ghostID == Ghost_NP_ID)
-        {
-            var hud = self.room.game.cameras[0].hud;
-            if (hud.dialogBox is null)
-                hud.InitDialogBox();
-            self.currentConversation = new(Ghost_NP_Convo, self, hud.dialogBox);
-            self.conversationActive = true;
-        }
-        else
-            orig(self);
-    }*/
+        if (itemType == SeerSpawn)
+            return "Symbol_SeerVoidSpawn";
+        return orig(itemType, intData);
+    }
+
+    static Color On_ItemSymbol_ColorForItem(On.ItemSymbol.orig_ColorForItem orig, AbstractPhysicalObject.AbstractObjectType itemType, int intData)
+    {
+        if (itemType == SeerSpawn)
+            return new(243f / 255f, 193f / 255f, 89f / 255f);
+        return orig(itemType, intData);
+    }
 
     static void On_CentipedeGraphics_Update(On.CentipedeGraphics.orig_Update orig, CentipedeGraphics self)
     {
@@ -373,7 +363,7 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
             if (self.lastPingRegion != s && !rm.abstractRoom.gate)
             {
                 self.lastPingRegion = s;
-                if (World.CheckForRegionGhost(s_seer, s))
+                if (GhostWorldPresence.GetGhostID(s) is GhostWorldPresence.GhostID ID && World.CheckForRegionGhost(s_seer, s) && (!EchoParser.echoSettings.TryGetValue(ID, out var settings) || settings.SpawnOnDifficulty))
                 {
                     var ghostID = GhostWorldPresence.GetGhostID(s);
                     if (!session.saveState.deathPersistentSaveData.ghostsTalkedTo.TryGetValue(ghostID, out var val) || val < 2)
@@ -596,10 +586,6 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
                 SeerIntroDream = null;
                 SeerSpawn?.Unregister();
                 SeerSpawn = null;
-                /*Ghost_NP_ID?.Unregister();
-                Ghost_NP_ID = null!;
-                Ghost_NP_Convo?.Unregister();
-                Ghost_NP_Convo = null!;*/
                 break;
             }
         }
@@ -654,6 +640,8 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         orig(self);
         if (!s_lateInit)
         {
+            if (!Futile.atlasManager.DoesContainAtlas("Symbol_SeerVoidSpawn"))
+                Futile.atlasManager.ActuallyLoadAtlasOrImage("Symbol_SeerVoidSpawn", "atlases/Symbol_SeerVoidSpawn" + Futile.resourceSuffix, string.Empty);
             CustomDreams.SetDreamScene(SeerIntroDream, new("SeerIntroDream"));
             s_seer = new("Seer");
             On.GhostWorldPresence.SpawnGhost += On_GhostWorldPresence_SpawnGhost;
@@ -665,9 +653,22 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
     {
         var res = orig(ghostID, karma, karmaCap, ghostPreviouslyEncountered, playingAsRed);
         if (!res && !Custom.rainWorld.safariMode && (!ModManager.Expedition || !Custom.rainWorld.ExpeditionMode || Custom.rainWorld.progression.currentSaveState.cycleNumber != 0) && Custom.rainWorld.progression.currentSaveState.saveStateNumber == s_seer)
-            return (ghostID?.value == "NP" ? ghostPreviouslyEncountered == 1 : ghostPreviouslyEncountered < 2) && karma >= karmaCap;
+        {
+            if (ghostID is null)
+                return res;
+            if (ghostID.value == "NP")
+                return ghostPreviouslyEncountered == 1;
+            return (!EchoParser.echoSettings.TryGetValue(ghostID, out var settings) || settings.SpawnOnDifficulty) && ghostPreviouslyEncountered < 2 && EchoKarmaCondition(karma, karmaCap);
+        }
         return res;
     }
+
+    public static bool EchoKarmaCondition(int karma, int karmaCap) => karmaCap switch
+    {
+        4 => karma >= 4,
+        6 => karma >= 5,
+        _ => karma >= 6 || karma >= karmaCap
+    };
 
     public void OnDisable()
     {

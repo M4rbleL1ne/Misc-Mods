@@ -8,6 +8,9 @@
     <Reference Include="BepInEx">
       <HintPath>Refs\BepInEx.dll</HintPath>
     </Reference>
+	<Reference Include="BepInEx">
+      <HintPath>Refs\RegionKit.dll</HintPath>
+    </Reference>
     <Reference Include="HOOKS-Assembly-CSharp">
       <HintPath>Refs\HOOKS-Assembly-CSharp.dll</HintPath>
     </Reference>
