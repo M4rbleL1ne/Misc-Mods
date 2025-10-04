@@ -4,6 +4,7 @@ using System.Security.Permissions;
 using System.Security;
 using System.Collections.Generic;
 using MoreSlugcats;
+using Watcher;
 
 #pragma warning disable CS0618 // ignore false message
 [module: UnverifiableCode]
@@ -12,7 +13,7 @@ using MoreSlugcats;
 
 namespace ModdedUnlocks;
 
-[BepInPlugin("lb-fgf-m4r-ik.modded-unlocks", nameof(ModdedUnlocks), "10.0.0")]
+[BepInPlugin("lb-fgf-m4r-ik.modded-unlocks", nameof(ModdedUnlocks), "10.0.1")]
 public sealed class ModdedUnlocksPlugin : BaseUnityPlugin
 {
     static HashSet<MultiplayerUnlocks.SandboxUnlockID> s_sandbox = [];
@@ -37,6 +38,15 @@ public sealed class ModdedUnlocksPlugin : BaseUnityPlugin
                 for (var i = 0; i < sb.Length; i++)
                     sbox.Add((MultiplayerUnlocks.SandboxUnlockID)sb[i].GetValue(null));
                 l = typeof(MoreSlugcatsEnums.LevelUnlockID).GetFields(BindingFlags.Public | BindingFlags.Static);
+                for (var i = 0; i < l.Length; i++)
+                    lbox.Add((MultiplayerUnlocks.LevelUnlockID)l[i].GetValue(null));
+            }
+            if (ModManager.Watcher)
+            {
+                sb = typeof(WatcherEnums.SandboxUnlockID).GetFields(BindingFlags.Public | BindingFlags.Static);
+                for (var i = 0; i < sb.Length; i++)
+                    sbox.Add((MultiplayerUnlocks.SandboxUnlockID)sb[i].GetValue(null));
+                l = typeof(WatcherEnums.LevelUnlockID).GetFields(BindingFlags.Public | BindingFlags.Static);
                 for (var i = 0; i < l.Length; i++)
                     lbox.Add((MultiplayerUnlocks.LevelUnlockID)l[i].GetValue(null));
             }
