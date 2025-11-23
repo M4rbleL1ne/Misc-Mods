@@ -13,6 +13,7 @@ using UnityEngine;
 using static Mono.Cecil.Cil.OpCodes;
 using Random = UnityEngine.Random;
 using Menu;
+using HUD;
 
 #pragma warning disable CS0618 // ignore false message
 [module: UnverifiableCode]
@@ -21,13 +22,14 @@ using Menu;
 
 namespace LBHardhatCat;
 
-[BepInPlugin("lb-fgf-m4r-ik.hardhat-cat", "LBHardhatCat", "10.0.0"), BepInDependency("slime-cubed.slugbase"), BepInDependency("rwmodding.coreorg.rk")]
+[BepInPlugin("lb-fgf-m4r-ik.hardhat-cat", "LBHardhatCat", "10.0.1"), BepInDependency("slime-cubed.slugbase"), BepInDependency("rwmodding.coreorg.rk")]
 public sealed class LBHardhatCatPlugin : BaseUnityPlugin
 {
     internal static ManualLogSource? s_logger;
     internal static ConditionalWeakTable<PlayerGraphics, FSprite> s_hardHat = new();
     internal static ConditionalWeakTable<Room.Tile, FalseTile> s_falseTiles = new();
     internal static FalseTile s_falseTile = new();
+    static bool s_lateInit;
 
     [StructLayout(LayoutKind.Sequential)]
     internal sealed class FalseTile { }
@@ -56,7 +58,6 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
         On.Player.CanBeSwallowed += On_Player_CanBeSwallowed;
         On.Player.Regurgitate += On_Player_Regurgitate;
         On.Player.TossObject += On_Player_TossObject;
-        new Hook(typeof(RegionGate).GetMethod("get_MeetRequirement", Public | NonPublic | Instance | Static), On_RegionGate_get_MeetRequirement);
         new Hook(typeof(SaveState).GetMethod("get_CanSeeVoidSpawn", Public | NonPublic | Instance | Static), On_SaveState_get_CanSeeVoidSpawn);
         On.ElectricGate.Update += On_ElectricGate_Update;
         On.GateKarmaGlyph.DrawSprites += On_GateKarmaGlyph_DrawSprites;
@@ -65,6 +66,19 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
         On.PlayerGraphics.DrawSprites += On_PlayerGraphics_DrawSprites;
         On.Region.ctor_string_int_int_Timeline += On_Region_ctor_string_int_int_Timeline;
         On.AbstractPhysicalObject.Realize += On_AbstractPhysicalObject_Realize;
+        On.PlayerGraphics.ApplyPalette += On_PlayerGraphics_ApplyPalette;
+        On.RainWorld.PostModsInit += On_RainWorld_PostModsInit;
+    }
+
+    // late hook for compat
+    static void On_RainWorld_PostModsInit(On.RainWorld.orig_PostModsInit orig, RainWorld self)
+    {
+        orig(self);
+        if (!s_lateInit)
+        {
+            s_lateInit = true;
+            new Hook(typeof(RegionGate).GetMethod("get_MeetRequirement", Public | NonPublic | Instance | Static), On_RegionGate_get_MeetRequirement);
+        }
     }
 
     static SLOracleBehaviorHasMark.MiscItemType On_SLOracleBehaviorHasMark_TypeOfMiscItem(On.SLOracleBehaviorHasMark.orig_TypeOfMiscItem orig, SLOracleBehaviorHasMark self, PhysicalObject testItem)
@@ -184,7 +198,7 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
     {
         var firstTimeR = self.abstractRoom.firstTimeRealized;
         orig(self);
-        if (self.game?.session is StoryGameSession sess && sess.saveState.cycleNumber < 2 && sess.saveState.saveStateNumber?.value == "LBHardhatCat" && self.abstractRoom.name == "HI_exvulturehole" && firstTimeR)
+        if (self.game?.session is StoryGameSession sess && sess.saveState.cycleNumber == 0 && sess.saveState.saveStateNumber?.value == "LBHardhatCat" && self.abstractRoom.name == "HI_exvulturehole" && firstTimeR)
             self.AddObject(new HardhatTutorial(self));
     }
 
@@ -268,7 +282,8 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
         var c = new ILCursor(il);
         var ind = 0;
         var vars = il.Body.Variables;
-        for (; ind < vars.Count && !vars[ind].VariableType.Name.Contains("Boolean"); ind++) { }
+        while (ind < vars.Count && !vars[ind].VariableType.Name.Contains("Boolean"))
+            ++ind;
         if (c.TryGotoNext(MoveType.After,
             x => x.MatchLdloc(ind))
          && c.TryGotoNext(MoveType.After,
@@ -392,40 +407,44 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
         if (self.SlugCatClass?.value == "LBHardhatCat" && self.objectInStomach is null && self.room is Room rm && ((ModManager.CoopAvailable && rm.game.IsStorySession && rm.game.Players[0] is AbstractCreature p && p != self.abstractCreature && p.state is PlayerState st && !self.isNPC) ? (st.quarterFoodPoints >= 2 || st.foodInStomach >= 1) : (self.playerState.quarterFoodPoints >= 2 || self.FoodInStomach >= 1)))
         {
             Subtract2QuarterFoodPoints(self);
-            if (rm.game.cameras[0]?.hud?.foodMeter?.quarterPipShower is HUD.FoodMeter.QuarterPipShower mt)
+            if (rm.game.cameras[0]?.hud?.foodMeter?.quarterPipShower is FoodMeter.QuarterPipShower mt)
                 mt.Reset();
             self.objectInStomach = new(rm.world, AbstractPhysicalObjectType.LBHardhatCatRuntile, null, rm.GetWorldCoordinate(self.firstChunk.pos), rm.game.GetNewID());
         }
         orig(self);
     }
 
+    static bool IsOEGate(string nm) => nm.EndsWith("_OE") || nm.StartsWith("GATE_OE_");
+
     static void On_GateKarmaGlyph_DrawSprites(On.GateKarmaGlyph.orig_DrawSprites orig, GateKarmaGlyph self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         orig(self, sLeaser, rCam, timeStacker, camPos);
-        if (!self.slatedForDeletetion && self.room is Room room && room == rCam.room && room.game?.StoryCharacter?.value == "LBHardhatCat")
+        if (!self.slatedForDeletetion && self.room is Room room && room == rCam.room && room.game?.StoryCharacter?.value == "LBHardhatCat" && IsOEGate(room.abstractRoom.name.ToUpperInvariant()))
         {
-            var nm = room.abstractRoom.name.ToUpperInvariant();
-            if (nm.Contains("_OE"))
+            var sprs = sLeaser.sprites;
+            for (var i = 0; i < sprs.Length; i++)
+                sprs[i].isVisible = false;
+        }
+    }
+
+    static void On_ElectricGate_Update(On.ElectricGate.orig_Update orig, ElectricGate self, bool eu)
+    {
+        orig(self, eu);
+        if (self.room is Room room && room.game?.StoryCharacter?.value == "LBHardhatCat" && IsOEGate(room.abstractRoom.name.ToUpperInvariant()))
+        {
+            var lmps = self.lampsOn;
+            if (lmps is not null)
             {
-                var sprs = sLeaser.sprites;
-                for (var i = 0; i < sprs.Length; i++)
-                    sprs[i].isVisible = false;
+                for (var i = 0; i < lmps.Length; i++)
+                    lmps[i] = false;
             }
+            self.batteryLeft = 0f;
         }
     }
 
     static bool On_SaveState_get_CanSeeVoidSpawn(Func<SaveState, bool> orig, SaveState self) => orig(self) || self.saveStateNumber?.value == "LBHardhatCat";
 
-    static bool On_RegionGate_get_MeetRequirement(Func<RegionGate, bool> orig, RegionGate self)
-    {
-        if (self.room is Room room && room.game?.StoryCharacter?.value == "LBHardhatCat")
-        {
-            var nm = room.abstractRoom.name.ToUpperInvariant();
-            if (nm.EndsWith("_OE") || nm.StartsWith("GATE_OE_"))
-                return false;
-        }
-        return orig(self);
-    }
+    static bool On_RegionGate_get_MeetRequirement(Func<RegionGate, bool> orig, RegionGate self) => (self.room is not Room room || room.game?.StoryCharacter?.value != "LBHardhatCat" || !IsOEGate(room.abstractRoom.name.ToUpperInvariant())) && orig(self);
 
     static void On_Player_TossObject(On.Player.orig_TossObject orig, Player self, int grasp, bool eu)
     {
@@ -454,11 +473,16 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
         orig(self, sLeaser, rCam);
         if (!self.owner.room.game.DEBUGMODE && self.player is Player p && p.SlugCatClass?.value == "LBHardhatCat")
         {
-            Array.Resize(ref sLeaser.sprites, sLeaser.sprites.Length + 1);
-            if (!s_hardHat.TryGetValue(self, out var spr))
-                s_hardHat.Add(self, spr = sLeaser.sprites[sLeaser.sprites.Length - 1] = new("LBHardhatHeadA0"));
-            else
-                sLeaser.sprites[sLeaser.sprites.Length - 1] = spr;
+            var lgt = sLeaser.sprites.Length;
+            Array.Resize(ref sLeaser.sprites, lgt + 1);
+            if (s_hardHat.TryGetValue(self, out var spr0))
+            {
+                spr0.isVisible = false;
+                spr0.RemoveFromContainer();
+                s_hardHat.Remove(self);
+            }
+            var spr = sLeaser.sprites[lgt] = new("LBHardhatHeadA0");
+            s_hardHat.Add(self, spr);
             spr.RemoveFromContainer();
             rCam.ReturnFContainer("Midground").AddChild(spr);
         }
@@ -502,6 +526,13 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
         }
     }
 
+    static void On_PlayerGraphics_ApplyPalette(On.PlayerGraphics.orig_ApplyPalette orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
+    {
+        orig(self, sLeaser, rCam, palette);
+        if (s_hardHat.TryGetValue(self, out var spr))
+            spr.color = Color.Lerp(Color.white, palette.blackColor, rCam.room.DarknessOfPoint(rCam, sLeaser.sprites[3].GetPosition()) * .4f);
+    }
+
     static void On_Region_ctor_string_int_int_Timeline(On.Region.orig_ctor_string_int_int_Timeline orig, Region self, string name, int firstRoomIndex, int regionNumber, SlugcatStats.Timeline timelineIndex)
     {
         orig(self, name, firstRoomIndex, regionNumber, timelineIndex);
@@ -536,6 +567,7 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
     static void On_AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
     {
         var f = self.realizedObject is null;
+        AbstractPhysicalObject obj;
         if (f && self.type == AbstractPhysicalObjectType.LBHardhatCatRuntile)
         {
             var tl = self.pos.Tile;
@@ -544,10 +576,12 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
             for (var i = 0; i < sts.Count; i++)
             {
                 var stuckObj = sts[i];
-                if (stuckObj.A.realizedObject is null && stuckObj.A != self)
-                    stuckObj.A.Realize();
-                if (stuckObj.B.realizedObject is null && stuckObj.B != self)
-                    stuckObj.B.Realize();
+                obj = stuckObj.A;
+                if (obj.realizedObject is null && obj != self)
+                    obj.Realize();
+                obj = stuckObj.B;
+                if (obj.realizedObject is null && obj != self)
+                    obj.Realize();
             }
         }
         else if (f && self.type == AbstractPhysicalObjectType.LBHardhatCatRocktile)
@@ -557,10 +591,12 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
             for (var i = 0; i < sts.Count; i++)
             {
                 var stuckObj = sts[i];
-                if (stuckObj.A.realizedObject is null && stuckObj.A != self)
-                    stuckObj.A.Realize();
-                if (stuckObj.B.realizedObject is null && stuckObj.B != self)
-                    stuckObj.B.Realize();
+                obj = stuckObj.A;
+                if (obj.realizedObject is null && obj != self)
+                    obj.Realize();
+                obj = stuckObj.B;
+                if (obj.realizedObject is null && obj != self)
+                    obj.Realize();
             }
         }
         else if (f && self.type == AbstractPhysicalObject.AbstractObjectType.Rock && self.world?.game?.StoryCharacter?.value == "LBHardhatCat")
@@ -576,10 +612,12 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
                 for (var i = 0; i < sts.Count; i++)
                 {
                     var stuckObj = sts[i];
-                    if (stuckObj.A.realizedObject is null && stuckObj.A != self)
-                        stuckObj.A.Realize();
-                    if (stuckObj.B.realizedObject is null && stuckObj.B != self)
-                        stuckObj.B.Realize();
+                    obj = stuckObj.A;
+                    if (obj.realizedObject is null && obj != self)
+                        obj.Realize();
+                    obj = stuckObj.B;
+                    if (obj.realizedObject is null && obj != self)
+                        obj.Realize();
                 }
             }
             else
@@ -587,25 +625,6 @@ public sealed class LBHardhatCatPlugin : BaseUnityPlugin
         }
         else
             orig(self);
-    }
-
-    static void On_ElectricGate_Update(On.ElectricGate.orig_Update orig, ElectricGate self, bool eu)
-    {
-        orig(self, eu);
-        if (self.room is Room room && room.game?.StoryCharacter?.value == "LBHardhatCat")
-        {
-            var nm = room.abstractRoom.name.ToUpperInvariant();
-            if (nm.Contains("_SS") || nm.Contains("_RM"))
-            {
-                var lmps = self.lampsOn;
-                if (lmps is not null)
-                {
-                    for (var i = 0; i < lmps.Length; i++)
-                        lmps[i] = false;
-                }
-                self.batteryLeft = 0f;
-            }
-        }
     }
 
     public void OnDisable()

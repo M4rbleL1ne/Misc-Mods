@@ -29,7 +29,7 @@ using Random = UnityEngine.Random;
 
 namespace SeerStuff;
 
-[BepInPlugin(K_ID, nameof(SeerStuff), "10.0.0"), BepInDependency("slime-cubed.slugbase"), BepInDependency("rwmodding.coreorg.rk")]
+[BepInPlugin(K_ID, nameof(SeerStuff), "10.0.1"), BepInDependency("slime-cubed.slugbase"), BepInDependency("rwmodding.coreorg.rk")]
 public sealed class SeerStuffPlugin : BaseUnityPlugin
 {
     [AllowNull] internal static ManualLogSource s_logger;
@@ -60,7 +60,6 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
         On.Expedition.ChallengeTools.AppendAdditionalCreatureSpawns += On_ChallengeTools_AppendAdditionalCreatureSpawns;
         On.Expedition.VistaChallenge.ModifyVistaCandidates += On_VistaChallenge_ModifyVistaCandidates;
         On.Player.SpitOutOfShortCut += On_Player_SpitOutOfShortCut;
-        new Hook(typeof(RegionGate).GetMethod("get_MeetRequirement", Public | NonPublic | Instance | Static), On_RegionGate_get_MeetRequirement);
         new Hook(typeof(SaveState).GetMethod("get_CanSeeVoidSpawn", Public | NonPublic | Instance | Static), On_SaveState_get_CanSeeVoidSpawn);
         On.ElectricGate.Update += On_ElectricGate_Update;
         On.GateKarmaGlyph.DrawSprites += On_GateKarmaGlyph_DrawSprites;
@@ -126,52 +125,37 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
             self.realizedObject = new SeerVoidSpawn(self);
     }
 
+    static bool IsSSGate(string nm) => nm.EndsWith("_SS") || nm.EndsWith("_RM") || nm.StartsWith("GATE_SS_") || nm.StartsWith("GATE_RM_");
+
     static void On_GateKarmaGlyph_DrawSprites(On.GateKarmaGlyph.orig_DrawSprites orig, GateKarmaGlyph self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         orig(self, sLeaser, rCam, timeStacker, camPos);
-        if (!self.slatedForDeletetion && self.room is Room room && room == rCam.room && room.game?.StoryCharacter == s_seer)
+        if (!self.slatedForDeletetion && self.room is Room room && room == rCam.room && room.game?.StoryCharacter == s_seer && IsSSGate(room.abstractRoom.name.ToUpperInvariant()))
         {
-            var nm = room.abstractRoom.name.ToUpperInvariant();
-            if (nm.Contains("_SS") || nm.Contains("_RM"))
-            {
-                var sprs = sLeaser.sprites;
-                for (var i = 0; i < sprs.Length; i++)
-                    sprs[i].isVisible = false;
-            }
+            var sprs = sLeaser.sprites;
+            for (var i = 0; i < sprs.Length; i++)
+                sprs[i].isVisible = false;
         }
     }
 
     static void On_ElectricGate_Update(On.ElectricGate.orig_Update orig, ElectricGate self, bool eu)
     {
         orig(self, eu);
-        if (self.room is Room room && room.game?.StoryCharacter == s_seer)
+        if (self.room is Room room && room.game?.StoryCharacter == s_seer && IsSSGate(room.abstractRoom.name.ToUpperInvariant()))
         {
-            var nm = room.abstractRoom.name.ToUpperInvariant();
-            if (nm.Contains("_SS") || nm.Contains("_RM"))
+            var lmps = self.lampsOn;
+            if (lmps is not null)
             {
-                var lmps = self.lampsOn;
-                if (lmps is not null)
-                {
-                    for (var i = 0; i < lmps.Length; i++)
-                        lmps[i] = false;
-                }
-                self.batteryLeft = 0f;
+                for (var i = 0; i < lmps.Length; i++)
+                    lmps[i] = false;
             }
+            self.batteryLeft = 0f;
         }
     }
 
     static bool On_SaveState_get_CanSeeVoidSpawn(Func<SaveState, bool> orig, SaveState self) => orig(self) || self.saveStateNumber == s_seer;
 
-    static bool On_RegionGate_get_MeetRequirement(Func<RegionGate, bool> orig, RegionGate self)
-    {
-        if (self.room is Room room && room.game?.StoryCharacter == s_seer)
-        {
-            var nm = room.abstractRoom.name.ToUpperInvariant();
-            if (nm.EndsWith("_SS") || nm.EndsWith("_RM") || nm.StartsWith("GATE_SS_") || nm.StartsWith("GATE_RM_"))
-                return false;
-        }
-        return orig(self);
-    }
+    static bool On_RegionGate_get_MeetRequirement(Func<RegionGate, bool> orig, RegionGate self) => (self.room is not Room room || room.game?.StoryCharacter != s_seer || !IsSSGate(room.abstractRoom.name.ToUpperInvariant())) && orig(self);
     
     static void On_Player_SpitOutOfShortCut(On.Player.orig_SpitOutOfShortCut orig, Player self, IntVector2 pos, Room newRoom, bool spitOutAllSticks)
     {
@@ -645,6 +629,7 @@ public sealed class SeerStuffPlugin : BaseUnityPlugin
             CustomDreams.SetDreamScene(SeerIntroDream, new("SeerIntroDream"));
             s_seer = new("Seer");
             On.GhostWorldPresence.SpawnGhost += On_GhostWorldPresence_SpawnGhost;
+            new Hook(typeof(RegionGate).GetMethod("get_MeetRequirement", Public | NonPublic | Instance | Static), On_RegionGate_get_MeetRequirement);
             s_lateInit = true;
         }
     }
